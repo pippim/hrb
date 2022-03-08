@@ -1,27 +1,8 @@
 /*
-    Hyperlink Recipe Baker (HRM for short)
+    /assets/js/hyperlinkRecipe.js - Hyperlink Recipe Baker (HRM for short)
 
-    hyperlinkRecipe.js - Create hyperlinks from Clipboard pastes (at least two).
-                        Export hyperlinks to Clipboard
-                            Recipe 1 = HTML format
-                            Recipe 2 = Markdown format
+    Instructions: https://pippim.github.io/hyperlink.html
 
-   Note:    Uses export processHyperlinkRecipe(className) so parent Javascript
-            function uses:
-
-                import processHyperlinkRecipe from 'hyperlinkRecipe.js';
-
-                Then to call use:
-
-                    <div id="tcm_window_body"<p> Empty paragraph </p></div>
-                    document.querySelector('#tcm_hyperlink_recipe').addEventListener('click', () => {
-                        processHyperlinkRecipe('tcm_window_body')
-                    });
-
-            Assuming this module is called from TCM, the Top level HTML must be using:
-                 <script type="module" src="/assets/js/theCookieMachine.js" ></script>
-
-            See: https://pippim.github.io/hyperlink.html
 */
 
 var html = null
@@ -54,8 +35,8 @@ function paintTable (b) {
     html += '<tr><td><button class="hrBtn" id="btnHref" type="button"\n' +
             'title="Insert browser address bar string (from the clipboard)"\n' +
             '>URL (href)</button></td>\n' +
-            '<td><input id="hrHref" class="hrInput" type="url" pattern="https?://.+" \n' +
-            'placeholder="Mandatory. URL from clipboard will go here" /></td></tr>\n'
+            '<td><textarea id="hrHref" class="hrInput" cols="45" rows="1"" \n' +
+            'placeholder="Mandatory. URL from clipboard will go here"></textarea></td></tr>\n'
     // Link Name (text)
     html += '<tr><td><button class="hrBtn" id="btnText" type="button"\n' +
             'title="Insert name of link to appear in document (from the clipboard)"\n' +
@@ -90,51 +71,50 @@ function paintTable (b) {
     html += '<tr><td><button class="hrBtn" id="btnRecipeHtml" type="button"\n' +
             'title="Copy HTML recipe to the clipboard. Then you can paste in document"\n' +
             '>HTML</button></td>\n' +
-            '<td><input id="hrRecipeHtml" class="hrInput" type="text"\n' +
-            'placeholder="HTML Recipe will be built here"></td></tr>\n'
+            '<td><textarea id="hrRecipeHtml" class="hrInput" cols="45" rows="1"\n' +
+            'placeholder="HTML Recipe will be built here"></textarea></td></tr>\n'
     // Bake Markdown Recipe
     html += '<tr><td><button class="hrBtn" id="btnRecipeMd" type="button"\n' +
             'title="Copy Markdown recipe to the clipboard. Then you can paste in document"\n' +
             '>Markdown</button></td>\n' +
-            '<td><input id="hrRecipeMd" class="hrInput" type="text"\n' +
-            'placeholder="Markdown Recipe will be built here"></td></tr>\n'
-    // End of our table and form
-    html += '</table></form>\n'
+            '<td><textarea id="hrRecipeMd" class="hrInput" cols="45" rows="1"\n' +
+            'placeholder="Markdown Recipe will be built here"></textarea></td></tr>\n'
+    html += '</table></form>\n'     // End of our table and form
 
-    /* Set styling for table elements */
-    html += '<style>\n'             // Styling for Hyperlink Recipe table
 
-    html += '#hrHdr {\n'            // Heading: "Hyperlink Recipe Baker" <h3> styling
-    html += '  margin-top: .5rem;\n'
-    html += '  margin-bottom: .5rem;\n'
-    html += '}\n'
-
-    html += 'td {\n'                // Table details
-    html += '  padding: 0 1rem;\n'  // Space between columns
-    html += '}\n'
-
+    // Styling for Hyperlink Recipe table
+    html += '<style>\n'
+    // Heading: "Hyperlink Recipe Baker" <h3> styling: .5rem margins all around
+    html += '#hrHdr { margin: .5rem; }\n'
+    // No borders in table
+    html += 'table, th, tr, td { border: none ! important; }\n'
+    // Table details: Space between columns
+    html += 'td { padding: 0 1rem; border-collapse: collapse; }\n'
+    // Buttons in the first column. Tiny bit of left & right padding
+    // Because Chrome and Firefox vary between shrinking & expanding on hover
+    html += '.hrBtn {\n' +
+            '  color: #000;\n' +
+            '  background-color: YellowGreen;\n' +
+            '  width: 100%;\n' +
+            '  padding: 0 .4rem;\n' +
+            '  border-radius: .5rem;\n' +
+            '  text-align: center;\n' +
+            '}\n'
+    // Button Hover: border .163rem ok in Firefox but grows in Chrome
+    html += '.hrBtn:hover {\n' +
+            '  color: #fff;\n' +
+            '  background-color: DarkGreen;\n' +
+            '}\n'
     // Column 2 minimum width to give lots of room for URL
+    // width and height = 100% for <textarea> draggable corner to resize
     // Box sizing takes full column width not varying by text length
-    html += '.hrInput {\n'
-    html += '  min-width: 550px;\n' // 600 is ok for modal, too wide for webpage
-    html += '  box-sizing: border-box;\n'
-    html += '  -webkit-box-sizing:border-box;\n'
-    html += '  -moz-box-sizing: border-box;\n'
-    html += '}\n'
-
-    html += '.hrBtn {\n'            // Buttons in the first column
-    html += '  background-color: YellowGreen;\n'
-    html += '  width: 100%;\n'
-    html += '  border-radius: .5rem;\n'
-    html += '  text-align: center;\n'
-    html += '}\n'                   // End of button styling
-
-    html += '.hrBtn:hover {\n'
-    html += '    color: #fff;\n'
-    html += '    background-color: DarkGreen;\n'
-    // border .163rem works ok in Firefox but grows button in Chrome
-    html += '    border: .12rem solid Black;\n'
-    html += '  }\n'                 // End of button hover styling
+    html += '.hrInput {\n' +
+            '  min-width: 550px;\n' +
+            '  width: 100%; height: 100%;\n' +
+            '  box-sizing: border-box;\n' +
+            '  -webkit-box-sizing:border-box;\n' +
+            '  -moz-box-sizing: border-box;\n' +
+            '}\n'
 
     html += '</style>\n'            // End of all styles
 
@@ -152,7 +132,7 @@ function paintTable (b) {
     inputRecipeHtml = document.getElementById('hrRecipeHtml');
     inputRecipeMd = document.getElementById('hrRecipeMd');
 
-    /* Clipboard read functions (HIGH SECURITY) for href, text and title */
+    /* Clipboard read functions (HIGH SECURITY) for href, text and title buttons */
     btnHref.addEventListener( 'click', () => { navigator.clipboard.readText().then(
             clipText => updateInput (inputHref, clipText)); });
     btnText.addEventListener( 'click', () => { navigator.clipboard.readText().then(
@@ -165,6 +145,13 @@ function paintTable (b) {
     document.getElementById("btnNewWindow").onclick = doNewWindow;
     document.getElementById("btnRecipeHtml").onclick = doRecipeHtml;
     document.getElementById("btnRecipeMd").onclick = doRecipeMd;
+
+    /* When user changes a character or pastes directly */
+    inputHref.oninput = function() {buildRecipes()};
+    inputText.oninput = function() {buildRecipes()};
+    inputTitle.oninput = function() {buildRecipes()};
+    inputExternal.oninput = function() {buildRecipes()};
+    inputNewWindow.oninput = function() {buildRecipes()};
 
     /* Manual paste event handlers - These work but suppress for now... */
     // hrHref.addEventListener('paste', handlePaste);
